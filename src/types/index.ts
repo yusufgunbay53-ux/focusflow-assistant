@@ -9,7 +9,6 @@ export interface Task {
   status: TaskStatus;
   createdAt: number;
   completedAt?: number;
-  order: number;
 }
 
 export interface PomodoroSession {
@@ -22,11 +21,11 @@ export interface PomodoroSession {
 export interface Stats {
   tasksCompletedToday: number;
   pomodorosCompletedToday: number;
-  totalFocusMinutes: number;
-  lastActiveDate: string; // YYYY-MM-DD
+  totalFocusMinutesToday: number;
+  lastUpdated: string; // YYYY-MM-DD
 }
 
-export interface AppData {
+export interface AppState {
   tasks: Task[];
   sessions: PomodoroSession[];
   stats: Stats;
