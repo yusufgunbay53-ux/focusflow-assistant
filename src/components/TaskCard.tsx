@@ -2,23 +2,29 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { Task, Priority } from "@/types";
 import { GripVertical, Trash2, CheckCircle2, Circle } from "lucide-react";
-import type { Task, Priority } from "@/types";
 
 interface TaskCardProps {
   task: Task;
+  onToggle: (id: string) => void;
   onDelete: (id: string) => void;
-  onToggleDone: (id: string) => void;
-  onEdit?: (task: Task) => void;
+  onEdit: (task: Task) => void;
 }
 
-const priorityLabel: Record<Priority, string> = {
+const priorityStyles: Record<Priority, string> = {
+  low: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
+  medium: "bg-amber-500/20 text-amber-300 border-amber-500/30",
+  high: "bg-rose-500/20 text-rose-300 border-rose-500/30",
+};
+
+const priorityLabels: Record<Priority, string> = {
   low: "Düşük",
   medium: "Orta",
   high: "Yüksek",
 };
 
-export function TaskCard({ task, onDelete, onToggleDone }: TaskCardProps) {
+export default function TaskCard({ task, onToggle, onDelete, onEdit }: TaskCardProps) {
   const {
     attributes,
     listeners,
@@ -31,65 +37,75 @@ export function TaskCard({ task, onDelete, onToggleDone }: TaskCardProps) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.6 : 1,
   };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`glass glass-hover p-3 mb-2 group cursor-default select-none ${
-        task.status === "done" ? "opacity-70" : ""
-      }`}
+      className={`
+        group relative glass rounded-xl p-3 border border-white/5
+        hover:border-cyan-500/40 hover:shadow-lg hover:shadow-cyan-500/10
+        transition-all duration-200 cursor-pointer
+        ${isDragging ? "opacity-50 scale-105 z-50 shadow-2xl shadow-cyan-500/20" : ""}
+        ${task.status === "done" ? "opacity-60" : ""}
+      `}
+      onClick={() => onEdit(task)}
     >
       <div className="flex items-start gap-2">
         <button
           {...attributes}
           {...listeners}
-          className="mt-0.5 text-slate-500 hover:text-[#00d2ff] cursor-grab active:cursor-grabbing touch-none"
-          aria-label="Sürükle"
+          onClick={(e) => e.stopPropagation()}
+          className="mt-0.5 p-1 rounded text-slate-500 hover:text-cyan-400 cursor-grab active:cursor-grabbing touch-none"
         >
-          <GripVertical size={16} />
+          <GripVertical className="w-4 h-4" />
         </button>
 
         <button
-          onClick={() => onToggleDone(task.id)}
-          className="mt-0.5 shrink-0 text-slate-400 hover:text-[#00d2ff] transition-colors"
-          aria-label={task.status === "done" ? "Tamamlanmadı işaretle" : "Tamamlandı işaretle"}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggle(task.id);
+          }}
+          className="mt-0.5 text-slate-400 hover:text-cyan-400 transition-colors"
         >
           {task.status === "done" ? (
-            <CheckCircle2 size={18} className="text-emerald-400" />
+            <CheckCircle2 className="w-5 h-5 text-cyan-400" />
           ) : (
-            <Circle size={18} />
+            <Circle className="w-5 h-5" />
           )}
         </button>
 
         <div className="flex-1 min-w-0">
           <p
-            className={`text-sm font-medium leading-snug ${
-              task.status === "done" ? "line-through text-slate-500" : "text-slate-100"
+            className={`text-sm font-medium text-slate-100 leading-snug ${
+              task.status === "done" ? "line-through text-slate-400" : ""
             }`}
           >
             {task.title}
           </p>
           {task.description && (
-            <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{task.description}</p>
+            <p className="text-xs text-slate-500 mt-1 line-clamp-2">
+              {task.description}
+            </p>
           )}
           <div className="mt-2 flex items-center gap-2">
             <span
-              className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium priority-${task.priority}`}
+              className={`text-[10px] px-2 py-0.5 rounded-full border ${priorityStyles[task.priority]}`}
             >
-              {priorityLabel[task.priority]}
+              {priorityLabels[task.priority]}
             </span>
           </div>
         </div>
 
         <button
-          onClick={() => onDelete(task.id)}
-          className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-400 transition-all p-1"
-          aria-label="Sil"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(task.id);
+          }}
+          className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
         >
-          <Trash2 size={14} />
+          <Trash2 className="w-4 h-4" />
         </button>
       </div>
     </div>

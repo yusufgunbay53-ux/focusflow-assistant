@@ -1,100 +1,92 @@
 "use client";
 
-import { useMemo } from "react";
-import { Sparkles, TrendingUp, Coffee, Zap } from "lucide-react";
-import type { Stats } from "@/types";
+import { useState, useEffect } from "react";
+import { Bot, RefreshCw, Sparkles } from "lucide-react";
+import { Task, Stats, PomodoroSession } from "@/types";
+import { generateCoachMessage, CoachMessage } from "@/lib/ai-coach";
 
 interface AICoachProps {
+  tasks: Task[];
   stats: Stats;
-  activeTasks: number;
-  inProgress: number;
+  sessions: PomodoroSession[];
 }
 
-export function AICoach({ stats, activeTasks, inProgress }: AICoachProps) {
-  const message = useMemo(() => {
-    const { tasksCompletedToday, pomodorosCompletedToday, totalFocusMinutes } = stats;
+export default function AICoach({ tasks, stats, sessions }: AICoachProps) {
+  const [message, setMessage] = useState<CoachMessage | null>(null);
+  const [isThinking, setIsThinking] = useState(false);
 
-    if (pomodorosCompletedToday >= 4) {
-      return {
-        icon: <Zap className="text-amber-400" size={18} />,
-        title: "Süper odak!",
-        text: `Bugün ${pomodorosCompletedToday} pomodoro ve ${totalFocusMinutes} dakika odak tamamladın. Harika gidiyorsun! 🔥`,
-        tone: "success" as const,
-      };
-    }
-    if (tasksCompletedToday >= 3) {
-      return {
-        icon: <TrendingUp className="text-emerald-400" size={18} />,
-        title: "Verimli bir gün",
-        text: `${tasksCompletedToday} görevi bitirdin. Momentum'unu koru, bir sonraki göreve geçebilirsin.`,
-        tone: "success" as const,
-      };
-    }
-    if (inProgress > 0 && pomodorosCompletedToday === 0) {
-      return {
-        icon: <Coffee className="text-[#00d2ff]" size={18} />,
-        title: "Başlamak için hazır mısın?",
-        text: "Devam eden görevin var. 25 dakikalık bir odak seansı ile hız kazanabilirsin.",
-        tone: "info" as const,
-      };
-    }
-    if (activeTasks > 5 && tasksCompletedToday === 0) {
-      return {
-        icon: <Sparkles className="text-violet-400" size={18} />,
-        title: "Biraz yavaşladın",
-        text: "Liste biraz kalabalık. En yüksek öncelikli 1 görevi seç ve kısa bir pomodoro başlat.",
-        tone: "warn" as const,
-      };
-    }
-    if (pomodorosCompletedToday >= 1) {
-      return {
-        icon: <TrendingUp className="text-[#00d2ff]" size={18} />,
-        title: "İyi gidiyorsun",
-        text: `${pomodorosCompletedToday} seans tamamlandı. Küçük molalar vererek devam et.`,
-        tone: "info" as const,
-      };
-    }
-    return {
-      icon: <Sparkles className="text-[#00d2ff]" size={18} />,
-      title: "Merhaba!",
-      text: "Bugün harika işler çıkarabilirsin. İlk görevini ekle veya bir odak seansı başlat.",
-      tone: "info" as const,
-    };
-  }, [stats, activeTasks, inProgress]);
+  const refresh = () => {
+    setIsThinking(true);
+    setTimeout(() => {
+      const msg = generateCoachMessage(tasks, stats, sessions);
+      setMessage(msg);
+      setIsThinking(false);
+    }, 600 + Math.random() * 400);
+  };
 
-  const borderColor =
-    message.tone === "success"
-      ? "border-emerald-500/30"
-      : message.tone === "warn"
-        ? "border-amber-500/30"
-        : "border-[#00d2ff]/25";
+  useEffect(() => {
+    refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(refresh, 800);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stats.tasksCompletedToday, stats.pomodorosCompletedToday, tasks.length]);
+
+  const typeStyles = {
+    encourage: "border-cyan-500/30 bg-cyan-500/5",
+    suggest: "border-amber-500/30 bg-amber-500/5",
+    celebrate: "border-emerald-500/30 bg-emerald-500/5",
+    neutral: "border-white/10 bg-white/5",
+  };
 
   return (
-    <div className={`glass p-4 border ${borderColor} animate-fade-in`}>
-      <div className="flex items-start gap-3">
-        <div className="p-2 rounded-lg bg-slate-800/60 shrink-0">{message.icon}</div>
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-sm font-semibold text-slate-100">{message.title}</h3>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#00d2ff]/10 text-[#00d2ff] border border-[#00d2ff]/20">
-              AI Koç
-            </span>
-          </div>
-          <p className="text-xs text-slate-400 leading-relaxed">{message.text}</p>
-        </div>
+    <div className="glass rounded-2xl border border-cyan-500/20 p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-slate-200 flex items-center gap-2">
+          <Bot className="w-4 h-4 text-cyan-400" />
+          AI Performans Koçu
+        </h3>
+        <button
+          onClick={refresh}
+          disabled={isThinking}
+          className="p-1.5 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition disabled:opacity-50"
+          title="Yenile"
+        >
+          <RefreshCw className={`w-4 h-4 ${isThinking ? "animate-spin" : ""}`} />
+        </button>
       </div>
 
-      <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-        <div className="bg-slate-900/50 rounded-lg py-2">
-          <p className="text-lg font-semibold text-slate-100">{stats.tasksCompletedToday}</p>
+      <div
+        className={`rounded-xl border p-3.5 min-h-[80px] transition-all duration-300 ${
+          message ? typeStyles[message.type] : "border-white/10 bg-white/5"
+        }`}
+      >
+        {isThinking ? (
+          <div className="flex items-center gap-2 text-slate-400 text-sm">
+            <Sparkles className="w-4 h-4 animate-pulse text-cyan-400" />
+            <span>Düşünüyor...</span>
+          </div>
+        ) : message ? (
+          <p className="text-sm text-slate-200 leading-relaxed">{message.text}</p>
+        ) : (
+          <p className="text-sm text-slate-500">Hazır olduğunda bir şeyler söyleyeceğim.</p>
+        )}
+      </div>
+
+      <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+        <div className="rounded-lg bg-white/5 py-2">
+          <p className="text-lg font-bold text-cyan-300">{stats.tasksCompletedToday}</p>
           <p className="text-[10px] text-slate-500">Görev</p>
         </div>
-        <div className="bg-slate-900/50 rounded-lg py-2">
-          <p className="text-lg font-semibold text-[#00d2ff]">{stats.pomodorosCompletedToday}</p>
+        <div className="rounded-lg bg-white/5 py-2">
+          <p className="text-lg font-bold text-emerald-300">{stats.pomodorosCompletedToday}</p>
           <p className="text-[10px] text-slate-500">Pomodoro</p>
         </div>
-        <div className="bg-slate-900/50 rounded-lg py-2">
-          <p className="text-lg font-semibold text-emerald-400">{stats.totalFocusMinutes}</p>
+        <div className="rounded-lg bg-white/5 py-2">
+          <p className="text-lg font-bold text-amber-300">{stats.totalFocusMinutesToday}</p>
           <p className="text-[10px] text-slate-500">Dakika</p>
         </div>
       </div>
