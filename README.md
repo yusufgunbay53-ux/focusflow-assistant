@@ -1,28 +1,49 @@
 # FocusFlow — AI Destekli Görev & Odaklanma Asistanı
 
-Modern, karanlık temalı, mobil uyumlu bir odaklanma ve görev yönetim uygulaması.
-
-![FocusFlow](https://img.shields.io/badge/Next.js-16-black?style=flat-square) ![Tailwind](https://img.shields.io/badge/Tailwind-4-38bdf8?style=flat-square) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=flat-square)
+Modern, karanlık temalı, kullanıcı dostu bir web uygulaması. Görev yönetimi (Kanban), Pomodoro sayacı, ambient sesler ve AI performans koçu bir arada.
 
 ## Özellikler
 
-- **Kanban Board** — Sürükle-bırak ile Yapılacaklar / Yapılıyor / Tamamlandı
-- **Öncelik etiketleri** — Düşük, Orta, Yüksek
-- **Pomodoro sayacı** — 25 dk odak + 5 dk mola, bildirim + ses uyarısı
-- **Ambient ses** — Yağmur / Lo-Fi ambient (Web Audio)
-- **AI Performans Koçu** — Günlük istatistiklere göre akıllı geri bildirim (mock, API’ye hazır)
-- **localStorage** — Veriler tarayıcıda kalıcı
-- **Glassmorphism + Neon mavi** dark UI
-- **PWA hazır** viewport & meta
+### Akıllı Görev Yönetimi
+- Görev ekleme, düzenleme, silme
+- Öncelik etiketleri (Düşük / Orta / Yüksek)
+- Sürükle-bırak Kanban board: Yapılacaklar → Yapılıyor → Tamamlandı
+- Tamamlanan görevlerde check işareti
+
+### Gelişmiş Pomodoro
+- 25 dk çalışma + 5 dk mola
+- Dairesel ilerleme göstergesi
+- Süre bitince tarayıcı bildirimi + sesli uyarı
+- Çalışma / Mola modları arasında geçiş
+
+### Ambient Ses Çalar
+- Yağmur sesi
+- Lo-Fi müzik
+- Ses seviyesi kontrolü
+
+### AI Performans Koçu
+- Görev tamamlama ve Pomodoro verilerine göre akıllı geri bildirim
+- Günlük istatistikler (görev, pomodoro, odak dakikası)
+- Mock AI — ileride gerçek API’ye kolayca bağlanabilir
+
+### Veri Saklama
+- Tüm veriler localStorage üzerinde
+- Sayfa yenilense bile görevler ve istatistikler korunur
+- JSON modelleri Supabase / Firebase’e taşımaya hazır
+
+## Tasarım
+- Tam karanlık mod
+- Neon mavi (#00d2ff) + derin gece mavisi (#0b111e)
+- Glassmorphism kartlar
+- Yumuşak hover efektleri
+- Mobil uyumlu (PWA manifest dahil)
 
 ## Teknoloji
-
-- Next.js 16 (App Router)
-- React 19
-- Tailwind CSS 4
-- Lucide React
-- @dnd-kit (drag & drop)
+- Next.js 14 (App Router)
 - TypeScript
+- Tailwind CSS
+- Lucide React (ikonlar)
+- @dnd-kit (sürükle-bırak)
 
 ## Kurulum
 
@@ -31,25 +52,28 @@ npm install
 npm run dev
 ```
 
-Tarayıcıda [http://localhost:3000](http://localhost:3000) adresini açın.
+Tarayıcıda: http://localhost:3000
 
-## Veri modeli (Supabase / Firebase’e geçiş için hazır)
+## Proje Yapısı
 
-```ts
-interface Task {
-  id: string;
-  title: string;
-  description?: string;
-  priority: "low" | "medium" | "high";
-  status: "todo" | "in-progress" | "done";
-  createdAt: number;
-  completedAt?: number;
-  order: number;
-}
+```
+src/
+├── app/
+│   ├── layout.tsx
+│   ├── page.tsx
+│   └── globals.css
+├── components/
+│   ├── Header.tsx
+│   ├── KanbanBoard.tsx
+│   ├── TaskCard.tsx
+│   ├── PomodoroTimer.tsx
+│   ├── AmbientPlayer.tsx
+│   └── AICoach.tsx
+├── lib/
+│   ├── storage.ts
+│   └── ai-coach.ts
+└── types/
+    └── index.ts
 ```
 
-Tüm state `src/hooks/useAppData.ts` içinde toplanmıştır; backend eklerken bu hook’u API çağrılarıyla değiştirmeniz yeterli.
-
-## Lisans
-
-MIT
+Geliştirici: FocusFlow · Grok ile hazırlanmıştır
